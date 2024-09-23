@@ -1,13 +1,8 @@
 package com.myorg;
 
-import software.amazon.awscdk.SecretValue;
-import software.amazon.awscdk.pipelines.CodePipeline;
-import software.amazon.awscdk.pipelines.CodePipelineSource;
-import software.amazon.awscdk.pipelines.GitHubSourceOptions;
-import software.amazon.awscdk.pipelines.ShellStep;
+import software.amazon.awscdk.*;
+import software.amazon.awscdk.pipelines.*;
 import software.constructs.Construct;
-import software.amazon.awscdk.Stack;
-import software.amazon.awscdk.StackProps;
 
 import java.util.Arrays;
 // import software.amazon.awscdk.Duration;
@@ -35,5 +30,15 @@ public class MyPipelineStack extends Stack {
                         .commands(Arrays.asList("npm install -g aws-cdk", "cdk synth"))
                         .build())
                 .build();
+
+        StageDeployment testingStage =
+                pipeline.addStage(new MyPipelineAppStage(this, "test", StageProps.builder()
+                        .env(Environment.builder()
+                                .account("211125707905")
+                                .region("us-west-1")
+                                .build())
+                        .build()));
+
+        testingStage.addPost(new ManualApprovalStep("approval"));
     }
 }
