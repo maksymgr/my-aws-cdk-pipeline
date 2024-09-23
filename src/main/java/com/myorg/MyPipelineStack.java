@@ -1,7 +1,9 @@
 package com.myorg;
 
+import software.amazon.awscdk.SecretValue;
 import software.amazon.awscdk.pipelines.CodePipeline;
 import software.amazon.awscdk.pipelines.CodePipelineSource;
+import software.amazon.awscdk.pipelines.GitHubSourceOptions;
 import software.amazon.awscdk.pipelines.ShellStep;
 import software.constructs.Construct;
 import software.amazon.awscdk.Stack;
@@ -19,10 +21,17 @@ public class MyPipelineStack extends Stack {
     public MyPipelineStack(final Construct scope, final String id, final StackProps props) {
         super(scope, id, props);
 
+        var githubAccessToken = SecretValue.secretsManager("github-token2");
+
         CodePipeline pipeline = CodePipeline.Builder.create(this, "pipeline")
                 .pipelineName("MyPipeline")
                 .synth(ShellStep.Builder.create("Synth")
-                        .input(CodePipelineSource.gitHub("maksymgr/my-aws-cdk-pipeline", "main"))
+                        .input(
+                                CodePipelineSource.gitHub("maksymgr/my-aws-cdk-pipeline", "main",
+                                        GitHubSourceOptions.builder()
+                                                .authentication(githubAccessToken)
+                                                .build())
+                        )
                         .commands(Arrays.asList("npm install -g aws-cdk", "cdk synth"))
                         .build())
                 .build();
